@@ -17,18 +17,16 @@ const isUnderscore = (c: string): boolean => {
 
 
 function matchPattern(inputLine: string, pattern: string): boolean {
-  if (pattern.length === 1) {
-    return inputLine.includes(pattern);
-  } else if (pattern === "\\d") {
-    return /\d/g.test(inputLine);
-  } else if (pattern === "\\w") {
-    console.log(inputLine, "inputLine");
-    for (const c of inputLine) {
-      return isDigit(c) || isAlphabetic(c) || isUnderscore(c);
-    }
-  } else {
-    throw new Error(`Unhandled pattern: ${pattern}`);
+  if (pattern === "\\d") {
+    return !!inputLine.match(/\d/);
   }
+  if (pattern === "\\w") {
+    return !!inputLine.match(/\w/);
+  }
+  if (pattern) {
+    return !!inputLine.match(pattern);
+  }
+  throw new Error(`Unhandled pattern: ${pattern}`);
 }
 
 if (args[2] !== "-E") {
