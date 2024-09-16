@@ -1,4 +1,5 @@
-import {Patterns} from "./Pattern";
+import {PatternResult, Patterns} from "./Pattern";
+import _ from "lodash";
 
 const args = process.argv;
 const pattern = args[3];
@@ -9,25 +10,31 @@ if (args[2] !== "-E") {
 }
 
 function matchPatternFull(fullInput: string, pattern: string): boolean {
-  let remainingInput = fullInput.trim();
+  const lines = fullInput.split("\n");
+  return lines.filter(it=>it!=="")
+      .every(line => matchPatternLine(line, pattern));
+}
+
+export function matchPatternLine(line: string, pattern: string): PatternResult |null {
+  let remainingInput = line.trim();
   let remainingPattern = pattern.trim();
+  let result :PatternResult|null = null;
 
   while (remainingPattern.length > 0) {
-    if (remainingInput.length === 0) return false;
+    // if (remainingInput.length === 0) return false;
 
-    const result = Patterns.values()
-        .map(it => it.pattern(remainingPattern,remainingInput))
-        .find(it => it.matchInput !== null);
+    const results = Patterns
+        .map(it => it.resolve(remainingPattern,remainingInput, line))
+        .filter(it => !_.isNil(it.matchInput));
 
-    if (result === undefined) return false;
+    result = results.find(it => it.matchInput !== null) ?? null;
+    if (_.isNil(result)) return null;
 
     remainingInput = result.remainingInput;
     remainingPattern = result.remainingPattern;
-
-    // console.log({remainingInput, remainingPattern});
   }
 
-  return true;
+  return result;
 }
 
 async function main(){
